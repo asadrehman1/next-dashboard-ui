@@ -19,7 +19,7 @@ const config: Config = {
         asadPurple: "#CFCEFF",
         asadPurpleLite: "#F1F0FF",
         asadYellow: "#FAE27C",
-        asadYellowLite: "FEFCE8"
+        asadYellowLite: "#FEFCE8"
       }
     },
   },

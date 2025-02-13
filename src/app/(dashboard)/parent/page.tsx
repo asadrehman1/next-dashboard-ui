@@ -1,6 +1,6 @@
 const ParentPage = () => {
     return (
-        <div>Admin</div>
+        <div>Parent</div>
     )
 }
 

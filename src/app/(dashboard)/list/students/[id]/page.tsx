@@ -1,5 +1,6 @@
 import Announcements from "@/components/Announcements"
 import BigCalendar from "@/components/BigCalendar"
+import FormModal from "@/components/FormModal"
 import PerformanceChart from "@/components/PerformanceChart"
 import Image from "next/image"
 import Link from "next/link"
@@ -23,7 +24,10 @@ const StudentDetailsPage = () => {
                             />
                         </div>
                         <div className="w-2/3 flex flex-col gap-4 justify-between">
-                            <h1 className="text-xl font-semibold">Cameron Moran</h1>
+                            <div className="flex items-center gap-4 justify-between">
+                                <h1 className="text-xl font-semibold">Cameron Moran</h1>
+                                <FormModal table="student" reqType="update" data={""} />
+                            </div>
                             <p className="text-sm text-gray-500">
                                 Lorem ipsum dolor sit amet consectetur adipisicing elit.
                             </p>

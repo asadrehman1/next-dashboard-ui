@@ -31,7 +31,7 @@ const FormModal = ({ table, reqType, data, id }: {
     | "announcement"
     reqType: "create" | "update" | "delete"
     data?: any
-    id?: number
+    id?: number | string
 }) => {
     const [open, setOpen] = useState<boolean>(false);
 

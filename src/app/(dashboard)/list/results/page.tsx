@@ -58,8 +58,8 @@ const ResultsList = () => {
             </td>
             <td>{item.student}</td>
             <td>{item.score}</td>
-            <td className="hidden md:table-cell">{item.teacher}</td>
             <td className="hidden md:table-cell">{item.class}</td>
+            <td className="hidden md:table-cell">{item.teacher}</td>
             <td className="hidden md:table-cell">{item.date}</td>
             <td>
                 <div className="flex items-center gap-2">

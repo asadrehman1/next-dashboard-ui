@@ -1,26 +1,17 @@
 "use client";
+import { prisma } from '@/lib/prisma';
 import Image from 'next/image';
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
 
-const data = [
-    {
-        name: 'Total',
-        count: 106,
-        fill: 'white',
-    },,
-    {
-        name: 'Girls',
-        count: 53,
-        fill: '#FAE27C',
-    },
-    {
-        name: 'Boys',
-        count: 53,
-        fill: '#C3EBFA',
-    },
-];
 
-const CountChart = () => {
+const CountChart = ({ boys, girls }: { boys: number; girls: number }) => {
+    
+    const data = [
+        { name: 'Total', count: boys + girls, fill: 'white' },
+        { name: 'Girls', count: girls, fill: '#FAE27C' },
+        { name: 'Boys', count: boys, fill: '#C3EBFA' },
+    ];
+
     return (
         <div className='bg-white rounded-xl w-full h-full p-4'>
             <div className='flex justify-between items-center'>
@@ -41,13 +32,13 @@ const CountChart = () => {
             <div className='flex justify-center gap-16'>
                 <div className='flex flex-col gap-1'>
                     <div className='w-5 h-5 bg-asadSky rounded-full' />
-                    <h1 className='font-bold'>1,234</h1>
-                    <h2 className='font-bold text-xs text-gray-300'>Boys (55%)</h2>
+                    <h1 className='font-bold'>{boys}</h1>
+                    <h2 className='font-bold text-xs text-gray-300'>Boys ({Math.round((boys/(boys+girls)) * 100)}%)</h2>
                 </div>
                 <div className='flex flex-col gap-1'>
                     <div className='w-5 h-5 bg-asadYellow rounded-full' />
-                    <h1 className='font-bold'>1,234</h1>
-                    <h2 className='font-bold text-xs text-gray-300'>Girls (45%)</h2>
+                    <h1 className='font-bold'>{girls}</h1>
+                    <h2 className='font-bold text-xs text-gray-300'>Girls ({Math.round((girls / (boys + girls)) * 100)}%)</h2>
                 </div>
             </div>
         </div>

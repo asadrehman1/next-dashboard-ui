@@ -10,7 +10,7 @@ const Pagination = ({
   count: number
 }) => {
   const router = useRouter();
-  
+
   const hasPrev = ITEMS_PER_PAGE * (page - 1) > 0;
   const hasNext = ITEMS_PER_PAGE * (page - 1) + ITEMS_PER_PAGE < count;
 
@@ -19,7 +19,6 @@ const Pagination = ({
     params.set("page", newPage.toString());
     router.push(`${window.location.pathname}?${params}`);
   }
-
   return (
     <div className="p-4 flex justify-between text-gray-500 items-center">
         <button disabled={!hasPrev} onClick={() => changePage(page - 1)} className="py-2 px-4 rounded-md bg-slate-200 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed">

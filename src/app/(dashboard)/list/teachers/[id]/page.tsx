@@ -121,8 +121,8 @@ const TeacherDetailsPage = () => {
                     <Link href={`/list/classes?supervisorId=${"teacher12"}`} className="p-3 rounded-md bg-asadSkyLite">Teacher&apos;s Classes</Link>
                     <Link href={`/list/students?teacherId=${"teacher2"}`} className="p-3 rounded-md bg-asadPurpleLite">Teacher&apos;s Students</Link>
                     <Link href={`/list/lessons?teacherId=${"teacher12"}`} className="p-3 rounded-md bg-asadYellowLite">Teacher&apos;s Lessons</Link>
-                    <Link href="/" className="p-3 rounded-md bg-pink-50">Teacher&apos;s Exams</Link>
-                    <Link href="/" className="p-3 rounded-md bg-asadSkyLite">Teacher&apos;s Assignments</Link>
+                    <Link href={`/list/exams?teacherId=${"teacher12"}`} className="p-3 rounded-md bg-pink-50">Teacher&apos;s Exams</Link>
+                    <Link href={`/list/assignments?teacherId=${"teacher12"}`} className="p-3 rounded-md bg-asadSkyLite">Teacher&apos;s Assignments</Link>
                 </div>
             </div>
             <PerformanceChart />

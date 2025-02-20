@@ -2,111 +2,128 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
+import { getRole } from "@/lib/utils";
 
 type EventList = Event & { class: Class };
 
-const columns = [
-    {
-        header: "Title",
-        accessor: "title"
-    },
-    {
-        header: "Class",
-        accessor: "class"
-    },
-    {
-        header: "Date",
-        accessor: "date",
-        className: "hidden md:table-cell"
-    },
-    {
-        header: "Start Time",
-        accessor: "startTime",
-        className: "hidden md:table-cell"
-    },
-    {
-        header: "End Time",
-        accessor: "endTime",
-        className: "hidden md:table-cell"
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-    },
-]
+const renderRow = async (item: EventList) => {
+    const { role } = await getRole();
+    return (
+        <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
+            <td className="flex items-center gap-4 p-4">
+                <h3 className="font-semibold">{item.title}</h3>
+            </td>
+            <td>{item.class?.name || "-"}</td> 
+            <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
+            <td className="hidden md:table-cell">{item.startTime.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            })}</td>
+            <td className="hidden md:table-cell">{item.endTime.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            })}</td>
+            <td>
+                <div className="flex items-center gap-2">
+                    {role === "admin" &&
+                        <>
+                            <FormModal table="event" reqType="update" data={item} />
+                            <FormModal table="event" reqType="delete" id={item.id} />
+                        </>
+                    }
+                </div>
+            </td>
+        </tr>
+    )
+};
 
-const renderRow = (item: EventList) => (
-    <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
-        <td className="flex items-center gap-4 p-4">
-            <h3 className="font-semibold">{item.title}</h3>
-        </td>
-        <td>{item.class.name}</td>
-        <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
-        <td className="hidden md:table-cell">{item.startTime.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        })}</td>
-        <td className="hidden md:table-cell">{item.endTime.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        })}</td>
-        <td>
-            <div className="flex items-center gap-2">
-                {role === "admin" &&
-                    <>
-                        <FormModal table="event" reqType="update" data={item} />
-                        <FormModal table="event" reqType="delete" id={item.id} />
-                    </>
-                }
-            </div>
-        </td>
-    </tr>
-);
-
-const EventsList = async ({searchParams}:{
-  searchParams: {[key:string]: string | undefined}
+const EventsList = async ({ searchParams }: {
+    searchParams: { [key: string]: string | undefined }
 }) => {
-  const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1; 
+    const { role, userId } = await getRole();
+    const { page, ...queryParams } = searchParams;
+    const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
 
-  const query: Prisma.EventWhereInput = {};
+    const columns = [
+        {
+            header: "Title",
+            accessor: "title"
+        },
+        {
+            header: "Class",
+            accessor: "class"
+        },
+        {
+            header: "Date",
+            accessor: "date",
+            className: "hidden md:table-cell"
+        },
+        {
+            header: "Start Time",
+            accessor: "startTime",
+            className: "hidden md:table-cell"
+        },
+        {
+            header: "End Time",
+            accessor: "endTime",
+            className: "hidden md:table-cell"
+        },
+        ...(role === "admin" ? [
+            {
+                header: "Actions",
+                accessor: "action",
+            },
+        ] : [])
+    ]
 
-  if(queryParams){
-    for(const [key,value] of Object.entries(queryParams)){
-      if(value !== undefined){
-        switch (key) {
-          case "search": 
-            query.title = {contains: value, mode: "insensitive"}
-            break;
-          default:
-            break;
+    // URL PARAMS CONDITION
+
+    const query: Prisma.EventWhereInput = {};
+    if (queryParams) {
+        for (const [key, value] of Object.entries(queryParams)) {
+            if (value !== undefined) {
+                switch (key) {
+                    case "search":
+                        query.title = { contains: value, mode: "insensitive" }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
-      }
     }
-  }
 
-  const [evensList,count] = await prisma.$transaction([
-    prisma.event.findMany({
-      where: query,
-      include: {
-       class: true
-      },
-      take: ITEMS_PER_PAGE,
-      skip: ITEMS_PER_PAGE * (p - 1),
+    // ROLE CONDITIONS
+    const roleConditions = {
+        teacher: { lessons: { some: { teacherId: userId! } } },
+        student: { students: { some: { id: userId! } } },
+        parent: { students: { some: { parentId: userId! } } },
+    };
 
-    }),
-    prisma.event.count({where: query})
-  ]);
+    query.OR = [
+        { classId: null },
+        { class: roleConditions[role as keyof typeof roleConditions] || {} }
+    ]
+    
+    const [evensList, count] = await prisma.$transaction([
+        prisma.event.findMany({
+            where: query,
+            include: {
+                class: true
+            },
+            take: ITEMS_PER_PAGE,
+            skip: ITEMS_PER_PAGE * (p - 1),
+
+        }),
+        prisma.event.count({ where: query })
+    ]);
 
 
     return (
@@ -124,7 +141,7 @@ const EventsList = async ({searchParams}:{
                             <Image src="/sort.png" alt="filter icon" width={14} height={14} />
                         </button>
                         {role === "admin" && (
-                            <FormModal table="event" reqType="create" />                            
+                            <FormModal table="event" reqType="create" />
                         )}
                     </div>
                 </div>
@@ -132,7 +149,7 @@ const EventsList = async ({searchParams}:{
             {/* LIST */}
             <Table columns={columns} renderRow={renderRow} data={evensList} />
             {/* PAGINATION */}
-            <Pagination count={count} page={p}/>
+            <Pagination count={count} page={p} />
         </div>
     )
 }

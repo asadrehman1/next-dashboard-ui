@@ -2,58 +2,65 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
+import { getRole } from "@/lib/utils";
 
 type LessonList = Lesson & { teacher: Teacher } & { class: Class } & { subject: Subject };
 
-const columns = [
-    {
-        header: "Subject Name",
-        accessor: "subject"
-    },
-    {
-        header: "Class",
-        accessor: "class"
-    },
-    {
-        header: "Teacher",
-        accessor: "teacher",
-        className: "hidden md:table-cell"
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-    },
-]
-const renderRow = (item: LessonList) => (
-    <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
-        <td className="flex items-center gap-4 p-4">
-            <h3 className="font-semibold">{item.subject.name}</h3>
-        </td>
-        <td>{item.class.name}</td>
-        <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
-        <td>
-            <div className="flex items-center gap-2">
-                {role === "admin" &&
-                    <>
-                        <FormModal table="lesson" reqType="update" data={item} />
-                        <FormModal table="lesson" reqType="delete" id={item.id} />
-                    </>
-                }
-            </div>
-        </td>
-    </tr>
-);
+const renderRow = async (item: LessonList) => {
+    const { role } = await getRole();
+    return (
+        <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
+            <td className="flex items-center gap-4 p-4">
+                <h3 className="font-semibold">{item.subject.name}</h3>
+            </td>
+            <td>{item.class.name}</td>
+            <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
+            <td>
+                <div className="flex items-center gap-2">
+                    {role === "admin" &&
+                        <>
+                            <FormModal table="lesson" reqType="update" data={item} />
+                            <FormModal table="lesson" reqType="delete" id={item.id} />
+                        </>
+                    }
+                </div>
+            </td>
+        </tr>
+    )
+};
 
 const LessonsList = async ({ searchParams }: {
     searchParams: { [key: string]: string | undefined }
 }) => {
+    const { role } = await getRole();
     const { page, ...queryParams } = searchParams;
     const p = page ? parseInt(page) : 1;
+
+    const columns = [
+        {
+            header: "Subject Name",
+            accessor: "subject"
+        },
+        {
+            header: "Class",
+            accessor: "class"
+        },
+        {
+            header: "Teacher",
+            accessor: "teacher",
+            className: "hidden md:table-cell"
+        },
+        ...(role === "admin" ? [
+            {
+                header: "Actions",
+                accessor: "action",
+            },
+        ] : [])
+    ]
 
     // URL PARAMS CONDITION
 
@@ -71,8 +78,8 @@ const LessonsList = async ({ searchParams }: {
                         break;
                     case "search":
                         query.OR = [
-                            {subject: {name : { contains: value, mode: "insensitive" }}},
-                            {teacher: {name : { contains: value, mode: "insensitive" }}},
+                            { subject: { name: { contains: value, mode: "insensitive" } } },
+                            { teacher: { name: { contains: value, mode: "insensitive" } } },
                         ]
                         break;
                     default:

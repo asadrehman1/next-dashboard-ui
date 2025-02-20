@@ -2,90 +2,105 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import Image from "next/image";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
 
 type AnnouncementList = Announcement & { class: Class }
 
-const columns = [
-    {
-        header: "Title",
-        accessor: "title"
-    },
-    {
-        header: "Class",
-        accessor: "class"
-    },
-    {
-        header: "Date",
-        accessor: "date",
-        className: "hidden md:table-cell"
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-    },
-]
+const renderRow = async (item: AnnouncementList) => {
+    const { role } = await getRole();
+    return (
+        <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
+            <td className="flex items-center gap-4 p-4">
+                <h3 className="font-semibold">{item.title}</h3>
+            </td>
+            <td>{item.class?.name || "-"}</td>
+            <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.date)}</td>
+            <td>
+                <div className="flex items-center gap-2">
+                    {role === "admin" &&
+                        <>
+                            <FormModal table="announcement" reqType="update" data={item} />
+                            <FormModal table="announcement" reqType="delete" id={item.id} />
+                        </>
+                    }
+                </div>
+            </td>
+        </tr>
+    );
+}
 
-const renderRow = (item: AnnouncementList) => (
-    <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-asadPurpleLite">
-        <td className="flex items-center gap-4 p-4">
-            <h3 className="font-semibold">{item.title}</h3>
-        </td>
-        <td>{item.class.name}</td>
-        <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.date)}</td>
-        <td>
-            <div className="flex items-center gap-2">
-                {role === "admin" &&
-                    <>
-                        <FormModal table="announcement" reqType="update" data={item} />
-                        <FormModal table="announcement" reqType="delete" id={item.id} />
-                    </>
-                }
-            </div>
-        </td>
-    </tr>
-);
-
-const AnnouncementsList = async ({searchParams}:{
-  searchParams: {[key:string]: string | undefined}
+const AnnouncementsList = async ({ searchParams }: {
+    searchParams: { [key: string]: string | undefined }
 }) => {
-  const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1; 
+    const { role, userId } = await getRole();
+    const columns = [
+        {
+            header: "Title",
+            accessor: "title"
+        },
+        {
+            header: "Class",
+            accessor: "class"
+        },
+        {
+            header: "Date",
+            accessor: "date",
+            className: "hidden md:table-cell"
+        },
+        ...(role === "admin" ? [{
+            header: "Actions",
+            accessor: "action",
+        }] : []),
+    ]
 
-  // URL PARAMS CONDITION
+    const { page, ...queryParams } = searchParams;
+    const p = page ? parseInt(page) : 1;
 
-  const query: Prisma.AnnouncementWhereInput = {};
+    // URL PARAMS CONDITION
 
-  if(queryParams){
-    for(const [key,value] of Object.entries(queryParams)){
-      if(value !== undefined){
-        switch (key) {
-          case "search": 
-            query.title = {contains: value, mode: "insensitive"}
-            break;
-          default:
-            break;
+    const query: Prisma.AnnouncementWhereInput = {};
+
+    if (queryParams) {
+        for (const [key, value] of Object.entries(queryParams)) {
+            if (value !== undefined) {
+                switch (key) {
+                    case "search":
+                        query.title = { contains: value, mode: "insensitive" }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
-      }
     }
-  }
+    // ROLE CONDITIONS
+    const roleConditions = {
+        teacher: { lessons: { some: { teacherId: userId! } } },
+        student: { students: { some: { id: userId! } } },
+        parent: { students: { some: { parentId: userId! } } },
+    };
 
-  const [announcementsList,count] = await prisma.$transaction([
-    prisma.announcement.findMany({
-      where: query,
-      include: {
-       class: true
-      },
-      take: ITEMS_PER_PAGE,
-      skip: ITEMS_PER_PAGE * (p - 1),
+    query.OR = [
+        { classId: null },
+        { class: roleConditions[role as keyof typeof roleConditions] || {} }
+    ]
+    
+    const [announcementsList, count] = await prisma.$transaction([
+        prisma.announcement.findMany({
+            where: query,
+            include: {
+                class: true
+            },
+            take: ITEMS_PER_PAGE,
+            skip: ITEMS_PER_PAGE * (p - 1),
 
-    }),
-    prisma.announcement.count({where: query})
-  ]);
+        }),
+        prisma.announcement.count({ where: query })
+    ]);
 
 
     return (
@@ -103,7 +118,7 @@ const AnnouncementsList = async ({searchParams}:{
                             <Image src="/sort.png" alt="filter icon" width={14} height={14} />
                         </button>
                         {role === "admin" && (
-                           <FormModal table="announcement" reqType="create"/>
+                            <FormModal table="announcement" reqType="create" />
                         )}
                     </div>
                 </div>
@@ -111,7 +126,7 @@ const AnnouncementsList = async ({searchParams}:{
             {/* LIST */}
             <Table columns={columns} renderRow={renderRow} data={announcementsList} />
             {/* PAGINATION */}
-            <Pagination count={count} page={p}/>
+            <Pagination count={count} page={p} />
         </div>
     )
 }

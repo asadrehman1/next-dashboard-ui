@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteSubject } from "@/lib/actions";
+import { deleteClass, deleteSubject } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 
 const deleteActionMap = {
     subject: deleteSubject,
-    class: deleteSubject,
+    class: deleteClass,
     teacher: deleteSubject,
     student: deleteSubject,
     exam: deleteSubject,
@@ -33,11 +33,15 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
     loading: () => <h1>Loading...</h1>
 })
+const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+    loading: () => <h1>Loading...</h1>
+})
 
 const forms: { [key: string]: (setOpen: Dispatch<SetStateAction<boolean>>, type: "create" | "update", data?: any, relatedData?: any) => JSX.Element } = {
     teacher: (setOpen, type, data, relatedData) => <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
     student: (setOpen, type, data, relatedData) => <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
     subject: (setOpen, type, data, relatedData) => <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+    class: (setOpen, type, data, relatedData) => <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
 }
 
 const FormModal = ({ table, reqType, data, id, relatedData }: {
@@ -67,9 +71,9 @@ const FormModal = ({ table, reqType, data, id, relatedData }: {
 
         useEffect(() => {
             if (state.success) {
-                toast(`Subject has been deleted`);
-                setOpen(false);
-                router.refresh();
+            toast(`${table.charAt(0).toUpperCase() + table.slice(1)} has been deleted`);
+            setOpen(false);
+            router.refresh();
             }
         }, [state, router])
 

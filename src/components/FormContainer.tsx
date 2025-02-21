@@ -22,23 +22,31 @@ const FormContainer = async ({ table, reqType, data, id }: {
 
     let relatedData = {};
 
-    if(reqType !== "delete"){
+    if (reqType !== "delete") {
         switch (table) {
             case "subject":
                 const subjectTeachers = await prisma.teacher.findMany({
-                    select: {id: true, name: true, surname: true}
+                    select: { id: true, name: true, surname: true }
                 })
-                relatedData = { teachers: subjectTeachers}
+                relatedData = { teachers: subjectTeachers }
                 break;
-        
+            case "class":
+                const classGrades = await prisma.grade.findMany({
+                    select: { id: true, level: true }
+                })
+                const classTeachers = await prisma.teacher.findMany({
+                    select: { id: true, name: true, surname: true }
+                })
+                relatedData = { teachers: classTeachers, grades: classGrades }
+                break;
             default:
                 break;
         }
     }
 
-  return (
-    <FormModal table={table} reqType={reqType} data={data} id={id} relatedData={relatedData}/>
-  )
+    return (
+        <FormModal table={table} reqType={reqType} data={data} id={id} relatedData={relatedData} />
+    )
 }
 
 export default FormContainer

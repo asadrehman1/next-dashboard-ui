@@ -1,4 +1,3 @@
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -8,6 +7,7 @@ import { Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 import { Class } from "@prisma/client";
 import { getRole } from "@/lib/utils";
+import FormContainer from "@/components/FormContainer";
 
 type ClassList = Class & {supervisor: Teacher};
 
@@ -25,8 +25,8 @@ const renderRow = async (item: ClassList) => {
             <div className="flex items-center gap-2">
                 {role === "admin" &&
                     <>
-                        <FormModal table="class" reqType="update" data={item} />
-                        <FormModal table="class" reqType="delete" id={item.id} />
+                        <FormContainer table="class" reqType="update" data={item} />
+                        <FormContainer table="class" reqType="delete" id={item.id} />
                     </>
                 }
             </div>
@@ -118,7 +118,7 @@ const ClassesList = async ({ searchParams }: {
                             <Image src="/sort.png" alt="filter icon" width={14} height={14} />
                         </button>
                         {role === "admin" && (
-                            <FormModal table="class" reqType="create" />
+                            <FormContainer table="class" reqType="create" />
                         )}
                     </div>
                 </div>

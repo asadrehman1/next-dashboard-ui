@@ -50,7 +50,7 @@ const LoginPage = () => {
                       submit
                       className="bg-blue-500 text-white my-1 rounded-md text-sm p-[10px]"
                   >
-                      Sign In
+                      <Clerk.Loading>{(isLoading) => (isLoading ? 'Signing in, please wait...' : 'Sign In')}</Clerk.Loading>
                   </SignIn.Action>
             </SignIn.Step>
         </SignIn.Root>

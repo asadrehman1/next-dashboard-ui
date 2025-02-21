@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import InputField from '../InputField';
 import Image from 'next/image';
+import { Dispatch, SetStateAction } from 'react';
 
 const schema = z.object({
     username: z.string()
@@ -24,9 +25,11 @@ const schema = z.object({
 
 type Inputs = z.infer<typeof schema>;
 
-const TeacherForm = ({ type, data }: {
+const TeacherForm = ({ type, data, setOpen, relatedData }: {
     type: "create" | "update"
     data?: any
+    setOpen: Dispatch<SetStateAction<boolean>>
+    relatedData?:any
 }) => {
     const {
         register,
@@ -42,7 +45,7 @@ const TeacherForm = ({ type, data }: {
 
     return (
         <form className='flex flex-col gap-8' onSubmit={onSubmit}>
-            {type === "create" ? "Create" : "Update"} a {type === "create" ? "new" : ""} Teacher
+            {type === "create" ? "Create a new Teacher" : "Update a Teacher"}
             <span className='text-xs text-gray-400 font-medium'>Authentication Information</span>
             <div className='flex justify-between flex-wrap gap-4'>
                 <InputField

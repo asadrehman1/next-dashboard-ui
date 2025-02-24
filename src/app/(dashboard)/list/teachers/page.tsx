@@ -1,4 +1,3 @@
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -8,6 +7,7 @@ import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { getRole } from "@/lib/utils";
+import FormContainer from "@/components/FormContainer";
 
 const renderRow = async (item: Teacher & { subjects: Subject[] } & { classes: Class[] }) => {
   const {role} = await getRole();
@@ -39,7 +39,7 @@ const renderRow = async (item: Teacher & { subjects: Subject[] } & { classes: Cl
           </button>
         </Link>
         {role === "admin" &&
-          <FormModal table="teacher" reqType="delete" id={item.id} />
+          <FormContainer table="teacher" reqType="delete" id={item.id} />
         }
       </div>
     </td>
@@ -144,7 +144,7 @@ const TeachersList = async ({searchParams}:{
               <Image src="/sort.png" alt="filter icon" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table="teacher" reqType="create"/>
+              <FormContainer table="teacher" reqType="create"/>
             )}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import Announcements from "@/components/Announcements"
-import BigCalendar from "@/components/BigCalendar"
+import BigCalendarContainer from "@/components/BigCalendarContainer"
 import FormContainer from "@/components/FormContainer"
 import PerformanceChart from "@/components/PerformanceChart"
 import { prisma } from "@/lib/prisma"
@@ -133,7 +133,7 @@ const TeacherDetailsPage = async ({ params: {id} }: { params: { id: string } }) 
                 {/* BOTTOM */}
                 <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
                     <h1>Teacher&apos;s Schedule</h1>
-                    <BigCalendar />
+                    <BigCalendarContainer type="teacherId" id={teacher.id} />
                 </div>
             </div>
             {/* RIGHT */}

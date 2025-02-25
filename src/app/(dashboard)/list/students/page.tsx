@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Student } from "@prisma/client";
 import { getRole } from "@/lib/utils";
+import FormContainer from "@/components/FormContainer";
 
 const renderRow = async (item: Student & { class: Class }) => {
     const { role } = await getRole();
@@ -39,7 +40,7 @@ const renderRow = async (item: Student & { class: Class }) => {
                         </button>
                     </Link>
                     {role === "admin" &&
-                        <FormModal table="student" reqType="delete" id={item.id} />
+                        <FormContainer table="student" reqType="delete" id={item.id} />
                     }
                 </div>
             </td>
@@ -138,7 +139,7 @@ const StudentsList = async ({ searchParams }: {
                             <Image src="/sort.png" alt="filter icon" width={14} height={14} />
                         </button>
                         {role === "admin" && (
-                            <FormModal table="student" reqType="create" />
+                            <FormContainer table="student" reqType="create" />
                         )}
                     </div>
                 </div>

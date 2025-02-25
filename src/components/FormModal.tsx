@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteClass, deleteStudent, deleteSubject, deleteTeacher } from "@/lib/actions";
+import { deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ const deleteActionMap = {
     class: deleteClass,
     teacher: deleteTeacher,
     student: deleteStudent,
-    exam: deleteSubject,
+    exam: deleteExam,
     // TODO: OTHER DELETE ACTIONS
     parent: deleteSubject,
     lesson: deleteSubject,
@@ -36,12 +36,16 @@ const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
 const ClassForm = dynamic(() => import("./forms/ClassForm"), {
     loading: () => <h1>Loading...</h1>
 })
+const ExamForm = dynamic(() => import("./forms/ExamForm"), {
+    loading: () => <h1>Loading...</h1>
+})
 
 const forms: { [key: string]: (setOpen: Dispatch<SetStateAction<boolean>>, type: "create" | "update", data?: any, relatedData?: any) => JSX.Element } = {
     teacher: (setOpen, type, data, relatedData) => <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
     student: (setOpen, type, data, relatedData) => <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
     subject: (setOpen, type, data, relatedData) => <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
     class: (setOpen, type, data, relatedData) => <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+    exam: (setOpen, type, data, relatedData) => <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
 }
 
 const FormModal = ({ table, reqType, data, id, relatedData }: {

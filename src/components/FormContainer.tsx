@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import FormModal from "./FormModal"
+import { getRole } from "@/lib/utils"
 
 const FormContainer = async ({ table, reqType, data, id }: {
     table:
@@ -19,7 +20,7 @@ const FormContainer = async ({ table, reqType, data, id }: {
     data?: any
     id?: number | string
 }) => {
-
+    const {role, userId} = await getRole();
     let relatedData = {};
 
     if (reqType !== "delete") {
@@ -54,6 +55,16 @@ const FormContainer = async ({ table, reqType, data, id }: {
                 });
                 relatedData = { classes: studentClasses, grades: studentGrades };
                 break;
+            case "exam":
+                const examLessons = await prisma.lesson.findMany({
+                    where: {
+                        ...(role === "teacher" ? { teacherId: userId! } : {}),
+                    },
+                    select: { id: true, name: true },
+                });
+                relatedData = { lessons: examLessons };
+                break;
+
             default:
                 break;
         }
